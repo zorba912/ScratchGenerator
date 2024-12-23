@@ -9,6 +9,7 @@ public class LotteryTicketGenerator
 {
     private readonly int totalTickets;
     private readonly int SLBook;
+    private readonly int gameCode;
     private readonly int total10kTickets;
     private readonly int total20kTickets;
     private readonly int total50kTickets;
@@ -19,10 +20,11 @@ public class LotteryTicketGenerator
     private readonly Dictionary<string, int> ticketDistribution;
     private readonly Random random;
 
-    public LotteryTicketGenerator(int totalTickets = 1500000)
+    public LotteryTicketGenerator(int totalTickets = 150000)
     {
-        // tỉ lệ này lấy theo bảng, mặc định là chia hết
+        // tỉ lệ này lấy theo bảng, mặc định thực tế sẽ lấy số chia hết
         this.SLBook = totalTickets / 150; //150 là số vé 1 quyển
+        this.gameCode = 186;        // mã trò chơi
         this.totalTickets = totalTickets;
         this.total10kTickets = totalTickets / 6;       // 250,000 / 1,500,000 in reality
         this.total20kTickets = totalTickets * 3 / 40;  // 112,500 / 1,500,000 in reality
@@ -68,9 +70,9 @@ public class LotteryTicketGenerator
                         .ToList();
     }
 
-    private List<string> FormatNumbers(List<int> numbers)
+    private List<string> FormatNumbers(List<int> numbers, string formatType)
     {
-        return numbers.Select(num => num.ToString("D2")).ToList();
+        return numbers.Select(num => num.ToString(formatType)).ToList();
     }
 
     private bool CheckWinningCondition(List<int> first4, List<int> last16)
@@ -200,23 +202,7 @@ public class LotteryTicketGenerator
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
     /// <returns></returns>
-    public List<string> ShuffleRange(List<string> tickets, int startIndex, int endIndex)
-    {
-        Random random = new Random();
 
-        // Tách phần cần xáo trộn
-        // var rangeToShuffle = tickets.GetRange(startIndex, endIndex - startIndex + 1);
-        var rangeToShuffle = tickets.GetRange(startIndex, endIndex - startIndex);
-
-        // Xáo trộn phần đã tách
-        var shuffledRange = rangeToShuffle.OrderBy(x => random.Next()).ToList();
-
-        // Thay thế phần cũ bằng phần đã xáo trộn
-        tickets.RemoveRange(startIndex, endIndex - startIndex + 1);
-        tickets.InsertRange(startIndex, shuffledRange);
-
-        return tickets;
-    }
 
     /// <summary>
     /// Phân bổ vé sao cho 15 vé sẽ có 1 vé trúng, các vé trúng được phân đều nhất có thể
@@ -287,7 +273,7 @@ public class LotteryTicketGenerator
                         //FillTheNextEmpty(IDCurrentTicketInAll, winning_item, IDCurrentBook * 150, idAll);
                         //FillTheLastEmpty(IDCurrentTicketInAll, winning_item, (IDCurrentBook - 1) * 150, idAll);
                     }
-                    id10K.Add(winning_item);
+                    //id10K.Add(winning_item);
                     list10K.RemoveAt(0);
                 }
             }
@@ -311,7 +297,7 @@ public class LotteryTicketGenerator
                     count_book20K++;
                 }
 
-                // chia hết 112500 vé vào 10000 quyển
+                // chia 112500 vé vào 10000 quyển
                 for (int i = 1; i <= maxQuantityInBook; i++)
                 {
                     var winning_item = list20K[0];
@@ -325,7 +311,7 @@ public class LotteryTicketGenerator
                     {
                         FillTheNearestSlot(IDCurrentTicketInAll, winning_item, IDCurrentBook * 150, (IDCurrentBook - 1) * 150, idAll);
                     }
-                    id20K.Add(winning_item);
+                    //id20K.Add(winning_item);
                     list20K.RemoveAt(0);
                 }
             }
@@ -350,7 +336,7 @@ public class LotteryTicketGenerator
                     {
                         FillTheNearestSlot(IDCurrentTicketInAll, winning_item, IDCurrentBook * 150, (IDCurrentBook - 1) * 150, idAll);
                     }
-                    id50K.Add(winning_item);
+                    //id50K.Add(winning_item);
                     list50K.RemoveAt(0);
                 }
             }
@@ -381,7 +367,7 @@ public class LotteryTicketGenerator
                         //FillTheNextEmpty(IDCurrentTicketInAll, winning_item, IDCurrentPackage * 3000, idAll);
                         //FillTheLastEmpty(IDCurrentTicketInAll, winning_item, (IDCurrentPackage - 1) * 3000, idAll);
                     }
-                    id100K.Add(winning_item);
+                    //id100K.Add(winning_item);
                     list100K.RemoveAt(0);
                 }
             }
@@ -405,7 +391,7 @@ public class LotteryTicketGenerator
                     {
                         FillTheNearestSlot(IDCurrentTicketInAll, winning_item, IDCurrentPackage * 3000, (IDCurrentPackage - 1) * 3000, idAll);
                     }
-                    id200K.Add(winning_item);
+                    //id200K.Add(winning_item);
                     list200K.RemoveAt(0);
                 }
             }
@@ -438,64 +424,43 @@ public class LotteryTicketGenerator
                     {
                         FillTheNearestSlot(IDCurrentTicketInAll, winning_item, IDCurrentPackage * 3000, (IDCurrentPackage - 1) * 3000, idAll);
                     }
-                    id500K.Add(winning_item);
+                    //id500K.Add(winning_item);
                     list500K.RemoveAt(0);
                 }
             }
         }
         #endregion
 
-        #region cho vé 500k
-        {
-            /*
-            // add vào 14 slot còn lại ngẫu nhiên
-            int remainingSlots = Math.Min(14, 15000 - finalDistribution.Count - 1);
-            for (int i = 0; i < remainingSlots; i++)
-            {
-                // con số tuỳ tỉ lệ vé trúng / tổng
-                if (winningTickets.Count > 0 && random.Next(7) == 0)
-                {
-                    int idx = random.Next(winningTickets.Count);
-                    currentBlock.Add(winningTickets[idx]);
-                    winningTickets.RemoveAt(idx);
-                }
-                else if (nonWinningTickets.Count > 0)
-                {
-                    int idx = random.Next(nonWinningTickets.Count);
-                    currentBlock.Add(nonWinningTickets[idx]);
-                    nonWinningTickets.RemoveAt(idx);
-                }
-            }
-            */
-
-
-            
-        }
-
         int count3 = 0; // đếm vé trống debug
+        int IDTicketInBook = 0;   // STT vé trong quyển hiện tại
         // vòng lặp lướt qua các quyển
         for (IDCurrentBook = 1; IDCurrentBook <= TongSoLuongBooks; IDCurrentBook++)
         {
+
             // điền nốt các vé vào các quyển hiện tại
-            // check 1 list trong khoảng
+            // chạy 150 vòng lặp cho 1 quyển
             for (IDCurrentTicketInAll = (IDCurrentBook - 1) * 150; IDCurrentTicketInAll < IDCurrentBook * 150; IDCurrentTicketInAll++)
             {
-                // kiểm tra vé trống không
+                IDTicketInBook++;
+                // kiểm tra slot hiện tại có trống không
                 if (idAll[IDCurrentTicketInAll].Equals("0"))
-                {
+                {   
+                    // điền các vé trống vào ô còn lại
                     count3++;
                     var randon20 = GenerateUniqueNumbers(20);
-                    var randon20Formatted = FormatNumbers(randon20);
+                    var randon20Formatted = FormatNumbers(randon20, "D2");
                     string nonWinningTicketNumbersStr = string.Join(" ", randon20Formatted) + " NO_PRIZE"; // thêm tag No Prize
+
 
                     idAll[IDCurrentTicketInAll] = nonWinningTicketNumbersStr;
                 }
-                    // điền các vé trống vào ô còn lại
+                //mã vé
 
+                //mã xác thực VIRN 23 chữ số
+
+                // mã AVC
             }
             // Xáo các quyển sau mỗi vòng lặp, do các slot đầu là vé trúng
-
-            //ShuffleRange(idAll, (IDCurrentBook - 1) * 150, IDCurrentBook * 150);
             int startIndex = (IDCurrentBook - 1) * 150;
             int endIndex = IDCurrentBook * 150;
 
@@ -510,20 +475,58 @@ public class LotteryTicketGenerator
             idAll.RemoveRange(startIndex, 150); //151
             idAll.InsertRange(startIndex, shuffledRange);
 
-            // ID trong danh sách tổng vẫn giữ nguyên
+  
 
-            /*
-            // 4. Xáo thứ tự trong block hiện tại, do slot đầu là vé trúng
-            currentBookInfo = currentBookInfo.OrderBy(x => random.Next()).ToList();
+        }
 
-            // 5. thêm block vào list tổng xuất ra return
-            finalDistribution.AddRange(currentBookInfo);
-            */
+        IDCurrentBook = 0;
+
+        List<string> Codes = new List<string>();
+        // Thêm mã vào đầu mỗi dòng vé
+        for (int idx = 0; idx < totalTickets; idx++)
+        {
+            //ID hiện tại là idx
+            // tự suy ra currentThung, currentQuyen, currentTicketIDinBook                
+            IDCurrentBook = (int)Math.Ceiling(idx / 150.0);
+            IDTicketInBook = idx - (IDCurrentBook-1) * 150;
+            IDCurrentPackage = (int)Math.Ceiling(IDCurrentBook / 20.0);
+            Codes = CreateCodesFromID(IDCurrentPackage, IDCurrentBook, IDTicketInBook, gameCode);
+            idAll[idx] = Codes[0] + " " + Codes[1] + " " + Codes[2] + idAll[idx];
         }
 
         return idAll;
     }
 
+    /// <summary>
+    /// Sinh các mã VIRN, mã vé cho vé
+    /// </summary>
+    /// <param name="currentThung"></param>
+    /// <param name="currentQuyen"></param>
+    /// <param name="currentVeTrongQuyen"></param>
+    /// <param name="gameCode"></param>
+    /// <returns></returns>
+    private List<string> CreateCodesFromID(int currentThung, int currentQuyen, int currentVeTrongQuyen, int gameCode)
+    {
+        string S = "1"; //Số lần in
+        // Mã vé G G G - P P P P B B - T T T
+        string PPPP = currentThung.ToString("D4");
+        string BB = currentQuyen.ToString("D2");
+        string TTT = currentVeTrongQuyen.ToString("D3");
+        string TicketCode = gameCode.ToString() + "-" + PPPP + BB + "-" + TTT;
+        string TicketCodeKhongGach = gameCode.ToString() + PPPP + BB + TTT;
+        // Mã VIRN 
+        // 7 ký tự số ngẫu nhiên
+        string random7symbols = "";
+        Random rand = new Random();
+        for (int i=0;  i<7; i++)
+        {
+            random7symbols += rand.Next(0, 10).ToString();
+        }    
+        string VIRN = gameCode.ToString() + PPPP + BB + TTT + S + random7symbols;
+        List<string> Codes = new List<string> { VIRN, TicketCode, TicketCodeKhongGach};
+        return Codes;
+
+    }
 
     /// <summary>
     /// Xác định loại vé trúng thưởng giải gì hoặc không trúng
@@ -611,8 +614,8 @@ public class LotteryTicketGenerator
             {
                 var first4 = GenerateUniqueNumbers(4);
                 var last16 = GenerateUniqueNumbers(16);
-                var first4Formatted = FormatNumbers(first4);
-                var last16Formatted = FormatNumbers(last16);
+                var first4Formatted = FormatNumbers(first4, "D2");
+                var last16Formatted = FormatNumbers(last16, "D2");
 
                 bool isWinning = CheckWinningCondition(first4, last16);
                 var ticketNumbersList = first4Formatted.Concat(last16Formatted).ToList();
@@ -667,15 +670,14 @@ public class LotteryTicketGenerator
         // listGeneratedTickets = listGeneratedTickets.OrderBy(x => random.Next()).ToList();
         listGeneratedTickets = ShuffleTickets(totalTickets, list10KTickets, list20KTickets, list50KTickets, list100KTickets, list200KTickets, list500KTickets, listNoWinningTickets);
         shuffleTime.Stop();
-        Console.WriteLine($"\nThời gian xáo thứ tự vé: {shuffleTime.Elapsed.TotalSeconds:F2} seconds");
+        Console.WriteLine($"\nThời gian xáo thứ tự vé theo cơ cấu đã cho: {shuffleTime.Elapsed.TotalSeconds:F2} seconds");
 
-        int totalWriteLine = 0;
         // Write to file
         using (StreamWriter file = new StreamWriter(outputFile))
         {
             for (int idx = 0; idx < listGeneratedTickets.Count; idx++)
             {
-                totalWriteLine++;
+                // chèn mã vé vào
                 file.WriteLine($"ID {(idx + 1):D7}: {listGeneratedTickets[idx]}");
             }
         }
@@ -692,7 +694,7 @@ public class LotteryTicketGenerator
     }
 
     /// <summary>
-    /// Đọc 1 khoảng file đã chọn
+    /// Đọc 1 khoảng các dòng trong file đã chọn
     /// </summary>
     /// <param name="filePath"></param>
     /// <param name="groupNumber"></param>
@@ -746,20 +748,6 @@ public class LotteryTicketGenerator
             ticketTypeCounts[ticketType]++;
             totalTypeCount++;
         }
-        /*
-        private bool VerifyDistribution(List<string> distribution)
-        {
-            for (int i = 0; i <= distribution.Count - 15; i++)
-            {
-                var window = distribution.GetRange(i, 15);
-                if (!window.Any(ticket => ticket.Contains("WIN")))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        */
 
         Console.WriteLine("\nKết quả đếm kiểm thử khi đọc file txt:");
         Console.WriteLine($"Số lượng vé 10000 VND: {ticketTypeCounts["10K"]} (Kỳ vọng: {total10kTickets})");
@@ -831,10 +819,9 @@ public class LotteryTicketGenerator
             totalTypeCount++;
         }
         Console.WriteLine($"\nKết quả đếm kiểm thử 1 thùng bất kỳ (3000 vé) bắt đầu từ dòng ngẫu nhiên thứ {startLine} trong file txt:");
-        Console.WriteLine($"Số lượng vé 100000 VND: {ticketTypeCounts["100K"]} (Kỳ vọng: {newTotal100kTickets})");
-        Console.WriteLine($"Số lượng vé 200000 VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {newTotal200kTickets})");
-        Console.WriteLine($"Số lượng vé 500000 VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {newTotal500kTickets})");
+        Console.WriteLine($"Số lượng vé 100K VND: {ticketTypeCounts["100K"]} (Kỳ vọng: {newTotal100kTickets})");
+        Console.WriteLine($"Số lượng vé 200K VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {newTotal200kTickets})");
+        Console.WriteLine($"Số lượng vé 500K VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {newTotal500kTickets})");
 
     }
 }
-#endregion
