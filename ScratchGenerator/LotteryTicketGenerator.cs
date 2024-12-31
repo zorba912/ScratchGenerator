@@ -183,10 +183,11 @@ namespace ScratchGenerator
         /// <param name="minPosInBlock"></param>
         /// <param name="allPos"></param>
         /// 
-        public List<int> GenerateNonWinningRawNumbers()
+        public string GenerateNonWinningRawNumbers(int count)
         {
-            var randon20 = GenerateUniqueNumbers(20);
-            return randon20;
+            var randon20 = GenerateUniqueNumbers(count);
+            
+            return string.Join(" ", randon20.Select(n => n.ToString("D2")));
         }
 
 
@@ -476,7 +477,7 @@ namespace ScratchGenerator
                         */
                         if (tag == "NO_PRIZE")
                         {
-                            newTicket.StringOfRawNumbers = string.Join(" ", GenerateUniqueNumbers(20));
+                            newTicket.StringOfRawNumbers = GenerateNonWinningRawNumbers(20);
                         }
                         else
                         {
