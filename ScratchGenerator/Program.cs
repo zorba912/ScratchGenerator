@@ -12,7 +12,7 @@ namespace ScratchGenerator
     {
         static void Main()
         {
-            int totalTickets = 6000000;
+            int totalTickets = 15000;
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
@@ -41,7 +41,6 @@ namespace ScratchGenerator
 
             // Prevent console window from closing immediately
             Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();  // This will wait for a key press before closing
             Console.ReadKey();  // This will wait for a key press before closing
             Console.ReadKey();  // This will wait for a key press before closing
         }
