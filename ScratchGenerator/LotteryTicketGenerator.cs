@@ -129,49 +129,6 @@ namespace ScratchGenerator
             return random.Next(0, max); //.ToString("D2");
         }
 
-        /// <summary>
-        /// Hàm tạo số cho vé trúng (trùng 1 cặp số)
-        /// </summary>
-        /// <returns></returns>
-        public List<int> GenerateWinningRawNumbers(int group1count, int group2count)
-        {
-            Random random = new Random();
-            List<int> ticket = new List<int>();
-
-            // Generate 4 unique numbers for the first group
-            HashSet<int> firstGroup = new HashSet<int>();
-            while (firstGroup.Count < group1count)
-            {
-                firstGroup.Add(GenerateRandomNumber(60));
-            }
-
-            ticket.AddRange(firstGroup);
-
-            // Generate 16 unique numbers for the second group
-            HashSet<int> secondGroup = new HashSet<int>();
-            while (secondGroup.Count < group2count)
-            {
-                secondGroup.Add(GenerateRandomNumber(60));
-            }
-
-            ticket.AddRange(secondGroup);
-
-            // Pick one random number from the first group to duplicate in the second group
-            int duplicateNumber = firstGroup.ElementAt(random.Next(4));
-            //int duplicatePosition1 = ticket.IndexOf(duplicateNumber);
-
-            // Replace a random number in the second group with the duplicate number
-            int duplicatePosition2;
-            do
-            {
-                duplicatePosition2 = random.Next(group1count, group2count);
-            } while (ticket[duplicatePosition2] == duplicateNumber);
-
-            ticket[duplicatePosition2] = duplicateNumber;
-
-            return ticket;
-        }
-
 
 
         /// <summary>
@@ -220,7 +177,7 @@ namespace ScratchGenerator
         /// </summary>
         /// <param name="nonWinningTickets">List các vé không trúng</param>
         /// <returns></returns>
-        public List<Ticket> DistributeAndShuffleTickets(int TongSoLuongTickets, int TongSoLuongVe10K, int TongSoLuongVe20K, int TongSoLuongVe50K, int TongSoLuongVe100K, int TongSoLuongVe200K, int TongSoLuongVe500K)
+        public List<Ticket> DistributeAndShuffleTickets(int TongSoLuongTickets, int TongSoLuongVe10K, int TongSoLuongVe20K, int TongSoLuongVe50K, int TongSoLuongVe100K, int TongSoLuongVe200K, int TongSoLuongVe500K, HashSet<string> originalNumbersOfVeTrung)
         {
 
             // Khởi tạo List<string> tất cả các vé, chỉ có trường prize tag
@@ -248,7 +205,7 @@ namespace ScratchGenerator
             // Mỗi thùng có 3000 vé, ta tính tổng số thùng dựa trên tổng số vé
             int TongSoLuongPack = (int)Math.Ceiling(TongSoLuongTickets / (float)SLVeTrongQuyen / SLQuyenTrongThung);
             int SoLuongThungMaxVe500K = TongSoLuongPack / 5; // trung bình 1 thùng 1.5 vé
-                                                                //2500 chỉ chạy trong trường hợp 10000 quyển
+                                                             //2500 chỉ chạy trong trường hợp 10000 quyển
             List<int> listSoThungCoMaxSoVe500K = CreateListUniqueRandom(TongSoLuongPack, SoLuongThungMaxVe500K);
 
 
@@ -277,7 +234,7 @@ namespace ScratchGenerator
                 }
 
                 if (isFilled == false)
-                {   
+                {
                     if (currentID > minIDinBlock)
                     {
                         // đếm từ vị trí gần nhất trước đó
@@ -301,7 +258,7 @@ namespace ScratchGenerator
                 }
             }
 
-            void ChiaVeVaoBlock (List<string> allID, int TongSoVeCanChia, int currentBlockID, int currentTicketID, int blockSize, int SoVeChiaChoMoiBlock, string prizeTag)
+            void ChiaVeVaoBlock(List<string> allID, int TongSoVeCanChia, int currentBlockID, int currentTicketID, int blockSize, int SoVeChiaChoMoiBlock, string prizeTag)
             {
                 for (int i = 1; i <= SoVeChiaChoMoiBlock; i++)
                 {
@@ -409,7 +366,7 @@ namespace ScratchGenerator
             }
 
             #endregion
-            
+
 
             #region xáo vé
             var stopwatch1 = new System.Diagnostics.Stopwatch();
@@ -436,13 +393,11 @@ namespace ScratchGenerator
             Console.WriteLine($"Tổng thời gian xáo vé: {totalProcessingTime.TotalSeconds:F2} seconds");
             //for (int count =1; count <= 150; count++)
             //{
-                //Console.WriteLine($"{allPrizeTags[count]}");
-//            }
-            
+            //Console.WriteLine($"{allPrizeTags[count]}");
+            //            }
+
             #endregion
-
-
-
+            
             #region gán các giá trị còn lại của class Ticket vào vé
             var stopwatch2 = new System.Diagnostics.Stopwatch();
             stopwatch2.Start();
@@ -459,29 +414,17 @@ namespace ScratchGenerator
                         IDCurrentTicketInAll = (IDCurrentPack - 1) * 3000 + (IDBookInPack - 1) * 150 + IDTicketInBook - 1;
                         string tag = allPrizeTags[IDCurrentTicketInAll];
                         Ticket newTicket = new Ticket();
-                        /*
-                        if (tag == "NO_PRIZE")
-                        {
-                            newTicket.StringOfRawNumbers = string.Join(" ", GenerateUniqueNumbers(20));
-                        }
-                        else
-                        {
-                            newTicket.StringOfRawNumbers = string.Join(" ", GenerateWinningRawNumbers(4,16));
-                        }
-                        Codes = CreateCodesFromID(IDCurrentPack, IDBookInPack, IDTicketInBook, gameCode);
-                        newTicket.VIRN = Codes[0];
-                        newTicket.TicketCode = Codes[1];
-                        newTicket.TicketCodeWithoutDash = Codes[2];
-                        newTicket.AVC = GenerateAVC(newTicket.PrizeTag, NhomKyTuDungChung);
                         
-                        */
                         if (tag == "NO_PRIZE")
                         {
                             newTicket.StringOfRawNumbers = GenerateNonWinningRawNumbers(20);
                         }
                         else
                         {
-                            newTicket.StringOfRawNumbers = GenerateWinningTicket(4,16,1,60);
+                            // newTicket.StringOfRawNumbers = GenerateWinningTicket(4,16,1,60);
+                            var item = originalNumbersOfVeTrung.FirstOrDefault();
+                            newTicket.StringOfRawNumbers = item;
+                            originalNumbersOfVeTrung.Remove(item);
                         }
                         Codes = CreateCodesFromID(IDCurrentPack, IDBookInPack, IDTicketInBook, gameCode);
                         newTicket.VIRN = Codes[0];
@@ -506,43 +449,6 @@ namespace ScratchGenerator
             TimeSpan totalProcessingTime2 = stopwatch2.Elapsed;
             Console.WriteLine($"Tổng thời gian điền thông tin vé: {totalProcessingTime2.TotalSeconds:F2} seconds");
 
-            /*
-            foreach (string s in idAll)
-            {
-                int IDTicketInBook = 0;   // STT vé trong quyển hiện tại, do vòng lặp duyệt qua từng quyển
-                                          // Xáo các quyển sau mỗi vòng lặp, do các slot đầu là vé trúng
-                // ID hiện tại là idx, ta tự suy ra currentThung, currentQuyen, currentTicketIDinBook                
-                IDCurrentBook = (int)Math.Ceiling(idx / 150.0);
-                IDTicketInBook = idx - (IDCurrentBook - 1) * 150;
-                IDCurrentPack = (int)Math.Ceiling(IDCurrentBook / 20.0);
-                //Codes = CreateCodesFromID(IDCurrentPack, IDCurrentBook, IDTicketInBook, gameCode);
-
-                Ticket newTicket = new Ticket();
-                string tag = idAll[idx];
-                if (tag == "NO_PRIZE")
-                {
-                    newTicket.RawNumbers = GenerateUniqueNumbers(20);
-                }
-                else
-                {
-                    newTicket.RawNumbers = GenerateWinningRawNumbers();
-                }
-                //newTicket.VIRN = Codes[0];
-                //newTicket.TicketCode = Codes[1];
-                //newTicket.TicketCodeWithoutDash = Codes[2];
-                newTicket.TypeOfWinningPrize = tag;
-                //newTicket.AVC = GenerateAVC(newTicket.TypeOfWinningPrize, NhomKyTuDungChung);
-                ShuffledTickets.Add(newTicket);
-                if (idx%100==0)
-                {
-                    Console.WriteLine($"Số vé đã tạo {idx}.");
-                }    
-                idx++;
-            }
-            stopwatch2.Stop();
-            TimeSpan totalProcessingTime2 = stopwatch2.Elapsed;
-            Console.WriteLine($"Tổng thời gian điền thông tin vé: {totalProcessingTime2.TotalSeconds:F2} seconds");
-            */
             #endregion
 
             return ShuffledTickets;
@@ -767,30 +673,22 @@ namespace ScratchGenerator
         /// <param name="ListThisTypeTicket"></param>
         /// <param name="quantity"></param>
         /// <param name="winningPrize"></param>
-        private void SinhVeTrungTheoSoLuong(HashSet<string> AllTickest, List<Ticket> ListThisTypeTicket, int quantity, string winningPrize)
+        private void SinhVeTrungTheoSoLuong(HashSet<string> AllTickest, string ListThisTypeTicket, int quantity)
         {
             for (int ticketId = 0; ticketId < quantity; ticketId++)
             {
-                string ticketRawNumer = GenerateWinningRawNumbers(4,16).ToString();
-
-                AllTickest.Add(ticketRawNumer);
-                Ticket ticket = new Ticket { StringOfRawNumbers = ticketRawNumer, PrizeTag = winningPrize };
-                ListThisTypeTicket.Add(ticket);
-
-                /*
-                if (!AllTickest.Contains(ticketRawNumer))
+                string stringTicketNumer = GenerateWinningTicket(4, 16, 1, 60);
+                // Kiểm tra vé trùng không
+                if (!AllTickest.Contains(stringTicketNumer))
                 {
-                    AllTickest.Add(ticketRawNumer);
-                    Ticket ticket = new Ticket {RawNumbers = ticketRawNumer, TypeOfWinningPrize = winningPrize };
-                    ListThisTypeTicket.Add(ticket);
-                }
-                */
+                    AllTickest.Add(stringTicketNumer);
+                }    
             }
         }
 
         public void GenerateTickets(string outputFile = "lottery_tickets.txt")
         {
-            var generatedTickets = new HashSet<List<int>>(); //danh sách vé đã tạo dùng để kiểm tra tính trùng
+            var theFirstNumbersSet = new HashSet<string>(); //danh sách số vé đã tạo, dùng để kiểm tra tính trùng
             var finalTicketsList = new List<Ticket>();  // danh sách vé đã tạo dùng để ghi vào CSDL
             
             // danh sách vé trúng và không trúng, dùng để xáo vé bước sau
@@ -815,6 +713,17 @@ namespace ScratchGenerator
 
             var sw = new Stopwatch();
             sw.Start();
+
+            //Sinh số vé trúng đảm bảo số lượng (Chưa quan trọng loại vé trúng)
+            for (int ticketId = 0; ticketId < TongSLVeTrung; ticketId++)
+            {
+                string stringTicketNumer = GenerateWinningTicket(4, 16, 1, 60);
+                // Kiểm tra vé trùng không
+                if (!theFirstNumbersSet.Contains(stringTicketNumer))
+                {
+                    theFirstNumbersSet.Add(stringTicketNumer);
+                }
+            }
 
             /*
             SinhVeTrungTheoSoLuong(generatedTickets, list10KTickets, TongSoLuong10kTickets, "10K");
@@ -897,8 +806,9 @@ namespace ScratchGenerator
             // xáo thứ tự vé theo thuật toán sao cho 15 vé liền nhau sẽ có 1 vé trúng
             var shuffleTime = new Stopwatch();
             shuffleTime.Start();
-            // listGeneratedTickets = listGeneratedTickets.OrderBy(x => random.Next()).ToList();
-            finalTicketsList = DistributeAndShuffleTickets(TongSLVe, TongSLVe10K, TongSLVe20K, TongSLVe50K, TongSLVe100K, TongSLVe200K, TongSLVe500K);
+    // listGeneratedTickets = listGeneratedTickets.OrderBy(x => random.Next()).ToList();
+    finalTicketsList = DistributeAndShuffleTickets(TongSLVe, TongSLVe10K, TongSLVe20K, TongSLVe50K, TongSLVe100K, TongSLVe200K, TongSLVe500K, theFirstNumbersSet);
+    
             shuffleTime.Stop();
             Console.WriteLine($"\nThời gian phân phối và xáo vé theo cơ cấu đã cho: {shuffleTime.Elapsed.TotalSeconds:F2} seconds");
 
@@ -961,15 +871,15 @@ namespace ScratchGenerator
         public void VerifyDistribution(string outputFile = "lottery_tickets.txt")
         {
             var ticketTypeCounts = new Dictionary<string, int>
-        {
-            { "10K", 0 },
-            { "20K", 0 },
-            { "50K", 0 },
-            { "100K", 0 },
-            { "200K", 0 },
-            { "500K", 0 },
-            { "NO_PRIZE", 0 }
-        };
+            {
+                { "10K", 0 },
+                { "20K", 0 },
+                { "50K", 0 },
+                { "100K", 0 },
+                { "200K", 0 },
+                { "500K", 0 },
+                { "NO_PRIZE", 0 }
+            };
 
             int totalLine = 0;
             int totalTypeCount = 0;
@@ -981,8 +891,14 @@ namespace ScratchGenerator
                 ticketTypeCounts[ticketType]++;
                 totalTypeCount++;
             }
+            int demVe = 0;
+            foreach (var ticketType in ticketTypeCounts)
+            {
+                demVe += ticketType.Value;
+            }    
 
-            Console.WriteLine("\nKết quả đếm kiểm thử khi đọc file txt:");
+            Console.WriteLine("\nKết quả đếm kiểm thử khi đọc file txt: {dem}");
+            Console.WriteLine("Tổng số vé phát ra: " + demVe.ToString());
             Console.WriteLine($"Số lượng vé 10000 VND: {ticketTypeCounts["10K"]} (Kỳ vọng: {TongSLVe10K})");
             Console.WriteLine($"Số lượng vé 20000 VND: {ticketTypeCounts["20K"]} (Kỳ vọng: {TongSLVe20K})");
             Console.WriteLine($"Số lượng vé 50000 VND: {ticketTypeCounts["50K"]} (Kỳ vọng: {TongSLVe50K})");
@@ -990,6 +906,7 @@ namespace ScratchGenerator
             Console.WriteLine($"Số lượng vé 200000 VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {TongSLVe200K})");
             Console.WriteLine($"Số lượng vé 500000 VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {TongSLVe500K})");
             Console.WriteLine($"Số lượng vé không trúng: {ticketTypeCounts["NO_PRIZE"]} (Kỳ vọng: {TongSLVeKhongTrung})");
+
 
             // Verify distribution
             Debug.Assert(ticketTypeCounts["10K"] == TongSLVe10K, "Số vé 10K không khớp");
@@ -1000,6 +917,7 @@ namespace ScratchGenerator
             Debug.Assert(ticketTypeCounts["500K"] == TongSLVe500K, "Số vé 500K không khớp");
             Debug.Assert(ticketTypeCounts["NO_PRIZE"] == TongSLVeKhongTrung, "Số vé không trúng thưởng không khớp cơ cấu");
 
+            
 
             // Kiểm thử cho 1 quyển = 150 dòng bất kỳ trong file text
             int blocksize = 150; // nếu là thùng thì sẽ là 3000
@@ -1055,6 +973,8 @@ namespace ScratchGenerator
             Console.WriteLine($"Số lượng vé 100K VND: {ticketTypeCounts["100K"]} (Kỳ vọng: {newTotal100kTickets})");
             Console.WriteLine($"Số lượng vé 200K VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {newTotal200kTickets})");
             Console.WriteLine($"Số lượng vé 500K VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {newTotal500kTickets})");
+
+            // Kiểm thủ số vé không trúng liên tiếp
 
         }
     }

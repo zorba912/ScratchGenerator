@@ -12,7 +12,7 @@ namespace ScratchGenerator
     {
         static void Main()
         {
-            int totalTickets = 15000;
+            int totalTickets = 1500000;
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
