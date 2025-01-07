@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,11 @@ namespace ScratchGenerator
             generator.VerifyDistribution(outputFile);
 
             generator.VerifyStrike(outputFile);
+
+            
+            Console.WriteLine($"\nBạn có muốn mở file txt không? (ấn Enter)");
+            Console.ReadKey();  // This will wait for a key press before closing
+            Process.Start(outputFile);
 
             // Prevent console window from closing immediately
             Console.WriteLine("\nPress any key to exit...");

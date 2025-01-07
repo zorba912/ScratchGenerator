@@ -368,7 +368,7 @@ namespace ScratchGenerator
             #endregion
 
 
-            #region xáo vé
+            #region xáo vé trong block 150 vé
             var stopwatch1 = new System.Diagnostics.Stopwatch();
             stopwatch1.Start();
             IDCurrentBook = 0;
@@ -398,7 +398,56 @@ namespace ScratchGenerator
             //            }
 
             #endregion
-            
+
+            #region Sắp xếp sao cho 15 vé có 1 vé trúng
+            int nonWinningStrike = 0;
+            int idVe = 0;
+            string currentItem = "";
+            int nonWinningStrikeMaxPos = 0; //vị trí có chuỗi 15 vé không trúng
+
+            // Duyệt vòng lặp từng vé trong block 150 ve
+            for (idVe =0; idVe < TongSLVe;idVe++)
+            {
+
+                // nếu là vé không trúng
+                currentItem = allPrizeTags[idVe];
+                if (allPrizeTags[idVe] == "NO_PRIZE")
+                {
+                    // nếu số vé không trúng liên tiếp > 15
+                    if (nonWinningStrike >= 14)
+                    {
+                        nonWinningStrikeMaxPos = idVe;
+                        for (int idVeInLoop = idVe+1; idVeInLoop <= TongSLVe - 1; idVeInLoop++)
+                        {
+                            if (allPrizeTags[idVeInLoop] == "NO_PRIZE")
+                            {
+                                nonWinningStrike++;
+                            }
+                            else
+                            {
+                                // đổi chỗ với vé không trúng hiện tại ở chuỗi 15
+                                allPrizeTags[idVe] = allPrizeTags[idVeInLoop];
+                                allPrizeTags[idVeInLoop] = "NO_PRIZE";
+                                nonWinningStrike = 0;
+                                break;
+                            }
+                        }
+                        nonWinningStrike = 0;
+                        //break;
+                    }
+                    else
+                        nonWinningStrike++;
+                }
+                else
+                    nonWinningStrike = 0;
+                // 
+            }
+
+
+
+
+            #endregion
+
             #region gán các giá trị còn lại của class Ticket vào vé
             var stopwatch2 = new System.Diagnostics.Stopwatch();
             stopwatch2.Start();
@@ -449,7 +498,7 @@ namespace ScratchGenerator
             stopwatch2.Stop();
             TimeSpan totalProcessingTime2 = stopwatch2.Elapsed;
             Console.WriteLine($"Tổng thời gian điền thông tin vé: {totalProcessingTime2.TotalSeconds:F2} seconds");
-
+            Console.WriteLine($"Vị trí có chuỗi 15 vé không trúng liên tiếp cuối cùng là vé thứ {nonWinningStrikeMaxPos+1} ");
             #endregion
 
             return ShuffledTickets;
@@ -870,7 +919,7 @@ namespace ScratchGenerator
         }
 
         /// <summary>
-        /// Kiểm thử từ file txt
+        /// Kiểm thử cơ cấu phân bổ vé trong file txt
         /// </summary>
         /// <param name="outputFile"></param>
         /// 
@@ -903,7 +952,7 @@ namespace ScratchGenerator
                 demSLVe += ticketType.Value;
             }    
 
-            Console.WriteLine("\nKết quả đếm kiểm thử khi đọc file txt: {dem}");
+            Console.WriteLine("\n ----- Kết quả đếm kiểm thử khi đọc file txt -----");
             Console.WriteLine("Tổng số vé phát ra: " + demSLVe.ToString());
             Console.WriteLine($"Số lượng vé 10000 VND: {ticketTypeCounts["10K"]} (Kỳ vọng: {TongSLVe10K})");
             Console.WriteLine($"Số lượng vé 20000 VND: {ticketTypeCounts["20K"]} (Kỳ vọng: {TongSLVe20K})");
@@ -912,9 +961,12 @@ namespace ScratchGenerator
             Console.WriteLine($"Số lượng vé 200000 VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {TongSLVe200K})");
             Console.WriteLine($"Số lượng vé 500000 VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {TongSLVe500K})");
             Console.WriteLine($"Số lượng vé không trúng: {ticketTypeCounts["NO_PRIZE"]} (Kỳ vọng: {TongSLVeKhongTrung})");
+            Console.WriteLine($"Doanh thu dự kiến:");
+            Console.WriteLine($"Tổng giải thưởng:");
+            Console.WriteLine($"Tỉ lệ trả thưởng:  %");
 
 
-            // Verify distribution
+            // Verify distributionƠ
             Debug.Assert(ticketTypeCounts["10K"] == TongSLVe10K, "Số vé 10K không khớp");
             Debug.Assert(ticketTypeCounts["20K"] == TongSLVe20K, "Số vé 20K không khớp");
             Debug.Assert(ticketTypeCounts["50K"] == TongSLVe50K, "Số vé 50K không khớp");
@@ -950,7 +1002,8 @@ namespace ScratchGenerator
                 ticketTypeCounts[ticketType]++;
                 totalTypeCount++;
             }
-            Console.WriteLine($"\nKết quả đếm kiểm thử 1 quyển bất kỳ (150 vé) bắt đầu từ dòng ngẫu nhiên thứ {startLine} trong file txt:");
+            Console.WriteLine($"\n--- Kết quả đếm kiểm thử 1 quyển bất kỳ (150 vé) ---"); 
+            Console.WriteLine($"Bắt đầu từ dòng ngẫu nhiên thứ {startLine} trong file txt:");
             Console.WriteLine($"Số lượng vé 10000 VND: {ticketTypeCounts["10K"]} (Kỳ vọng: {newTotal10kTickets})");
             Console.WriteLine($"Số lượng vé 20000 VND: {ticketTypeCounts["20K"]} (Kỳ vọng: {newTotal20kTickets})");
             Console.WriteLine($"Số lượng vé 50000 VND: {ticketTypeCounts["50K"]} (Kỳ vọng: {newTotal50kTickets})");
@@ -975,13 +1028,19 @@ namespace ScratchGenerator
                 ticketTypeCounts[ticketType]++;
                 totalTypeCount++;
             }
-            Console.WriteLine($"\nKết quả đếm kiểm thử 1 thùng bất kỳ (3000 vé) bắt đầu từ dòng ngẫu nhiên thứ {startLine} trong file txt:");
+
+            Console.WriteLine($"\n--- Kết quả đếm kiểm thử 1 thùng bất kỳ (3000 vé) ---");
+            Console.WriteLine($"Bắt đầu từ dòng ngẫu nhiên thứ {startLine} trong file txt:");
             Console.WriteLine($"Số lượng vé 100K VND: {ticketTypeCounts["100K"]} (Kỳ vọng: {newTotal100kTickets})");
             Console.WriteLine($"Số lượng vé 200K VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {newTotal200kTickets})");
             Console.WriteLine($"Số lượng vé 500K VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {newTotal500kTickets})");
 
         }
 
+        /// <summary>
+        /// Kiểm thử chuỗi vé trúng, không trúng trong file txt
+        /// </summary>
+        /// <param name="outputFile"></param>
         public void VerifyStrike(string outputFile)
         {
 
@@ -1007,10 +1066,12 @@ namespace ScratchGenerator
                     nonWinningStrike = 0;
                 }
             }
+            Console.WriteLine($"\n--- Kết quả đếm kiểm thử chuỗi vé không trúng, trúng ---");
+            Console.WriteLine($"Kết quả kiểm tra số vé không trúng liên tiếp tối đa (không vượt quá 15): {maxNonWinningStrike}");
+            Console.WriteLine($"Số tờ không có vé trúng nào: ");
+            return;
 
-            Console.WriteLine($"\nKết quả kiểm tra số vé không trúng liên tiếp tối đa (không vượt quá 15): {maxNonWinningStrike}");
-
-            Console.WriteLine($"\nKết quả kiểm tra số vé trúng liên tiếp tối đa: {maxWinningStrike}");
+            Console.WriteLine($"Kết quả kiểm tra số vé trúng liên tiếp tối đa (chưa rõ yêu cầu): {maxWinningStrike}");
             return;
         }
     }
