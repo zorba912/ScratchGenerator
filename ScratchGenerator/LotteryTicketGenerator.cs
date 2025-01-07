@@ -986,23 +986,31 @@ namespace ScratchGenerator
         {
 
             // Kiểm thử số vé không trúng liên tiếp
+            int nonWinningStrike = 0;
+            int maxNonWinningStrike = 0;
             int winningStrike = 0;
             int maxWinningStrike = 0;
             foreach (string line in File.ReadLines(outputFile))
             {
                 string ticketType = line.Split(' ').Last();
                 if (ticketType == "NO_PRIZE")
-                    winningStrike += 1;
+                {
+                    nonWinningStrike += 1;
+                    maxWinningStrike = Math.Max(winningStrike, maxWinningStrike);
+                    winningStrike = 0;
+                }
+                    
                 else
                 {
-                    maxWinningStrike = Math.Max(maxWinningStrike, winningStrike);
-                    winningStrike = 0;
+                    winningStrike += 1;
+                    maxNonWinningStrike = Math.Max(maxNonWinningStrike, nonWinningStrike);
+                    nonWinningStrike = 0;
                 }
             }
 
-            Console.WriteLine($"\nKết quả kiểm tra số vé không trúng liên tiếp tối đa (không vượt quá 15): {maxWinningStrike}");
+            Console.WriteLine($"\nKết quả kiểm tra số vé không trúng liên tiếp tối đa (không vượt quá 15): {maxNonWinningStrike}");
 
-            Console.WriteLine($"\nKết quả kiểm tra số vé trúng liên tiếp tối đa:");
+            Console.WriteLine($"\nKết quả kiểm tra số vé trúng liên tiếp tối đa: {maxWinningStrike}");
             return;
         }
     }
