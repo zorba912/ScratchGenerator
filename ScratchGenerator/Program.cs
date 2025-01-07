@@ -12,7 +12,7 @@ namespace ScratchGenerator
     {
         static void Main()
         {
-            int totalTickets = 1500000;
+            int totalTickets = 15000;
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
@@ -38,6 +38,8 @@ namespace ScratchGenerator
 
             // Verify distribution
             generator.VerifyDistribution(outputFile);
+
+            generator.VerifyStrike(outputFile);
 
             // Prevent console window from closing immediately
             Console.WriteLine("\nPress any key to exit...");

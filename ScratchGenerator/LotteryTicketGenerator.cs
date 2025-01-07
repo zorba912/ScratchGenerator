@@ -390,6 +390,7 @@ namespace ScratchGenerator
 
             stopwatch1.Stop();
             TimeSpan totalProcessingTime = stopwatch1.Elapsed;
+            Console.WriteLine($"Tổng số vé dự kiến tạo ra: {TongSoLuongTickets}");
             Console.WriteLine($"Tổng thời gian xáo vé: {totalProcessingTime.TotalSeconds:F2} seconds");
             //for (int count =1; count <= 150; count++)
             //{
@@ -725,6 +726,11 @@ namespace ScratchGenerator
                 }
             }
 
+
+            sw.Stop();
+            Console.WriteLine($"\nTổng thời gian sinh dãy số không trùng lặp cho {TongSLVeTrung} vé trúng là {sw.Elapsed.TotalSeconds:F2} seconds");
+
+
             /*
             SinhVeTrungTheoSoLuong(generatedTickets, list10KTickets, TongSoLuong10kTickets, "10K");
             SinhVeTrungTheoSoLuong(generatedTickets, list20KTickets, TongSoLuong20kTickets, "20K");
@@ -891,14 +897,14 @@ namespace ScratchGenerator
                 ticketTypeCounts[ticketType]++;
                 totalTypeCount++;
             }
-            int demVe = 0;
+            int demSLVe = 0;
             foreach (var ticketType in ticketTypeCounts)
             {
-                demVe += ticketType.Value;
+                demSLVe += ticketType.Value;
             }    
 
             Console.WriteLine("\nKết quả đếm kiểm thử khi đọc file txt: {dem}");
-            Console.WriteLine("Tổng số vé phát ra: " + demVe.ToString());
+            Console.WriteLine("Tổng số vé phát ra: " + demSLVe.ToString());
             Console.WriteLine($"Số lượng vé 10000 VND: {ticketTypeCounts["10K"]} (Kỳ vọng: {TongSLVe10K})");
             Console.WriteLine($"Số lượng vé 20000 VND: {ticketTypeCounts["20K"]} (Kỳ vọng: {TongSLVe20K})");
             Console.WriteLine($"Số lượng vé 50000 VND: {ticketTypeCounts["50K"]} (Kỳ vọng: {TongSLVe50K})");
@@ -974,8 +980,30 @@ namespace ScratchGenerator
             Console.WriteLine($"Số lượng vé 200K VND: {ticketTypeCounts["200K"]} (Kỳ vọng: {newTotal200kTickets})");
             Console.WriteLine($"Số lượng vé 500K VND: {ticketTypeCounts["500K"]} (Kỳ vọng: {newTotal500kTickets})");
 
-            // Kiểm thủ số vé không trúng liên tiếp
+        }
 
+        public void VerifyStrike(string outputFile)
+        {
+
+            // Kiểm thử số vé không trúng liên tiếp
+            int winningStrike = 0;
+            int maxWinningStrike = 0;
+            foreach (string line in File.ReadLines(outputFile))
+            {
+                string ticketType = line.Split(' ').Last();
+                if (ticketType == "NO_PRIZE")
+                    winningStrike += 1;
+                else
+                {
+                    maxWinningStrike = Math.Max(maxWinningStrike, winningStrike);
+                    winningStrike = 0;
+                }
+            }
+
+            Console.WriteLine($"\nKết quả kiểm tra số vé không trúng liên tiếp tối đa (không vượt quá 15): {maxWinningStrike}");
+
+            Console.WriteLine($"\nKết quả kiểm tra số vé trúng liên tiếp tối đa:");
+            return;
         }
     }
 }
